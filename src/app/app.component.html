@@ -1,10 +1,37 @@
 <div class="center">
-  <h2>Angular Web Worker Example</h2>
-  <button class="btn btn-light" (click)="handleLongOperation()">Do Long Operation</button>
+  <h2>🎫Travel Booking App🎟🎟</h2>
+
+  <!-- Network Status -->
+  <div class="status-bar" [class.offline]="!isOnline">
+    <span>{{ isOnline ? "🟢 Online" : "🔴 Offline" }}</span>
+  </div>
+
+  <!-- Animation Test -->
   <div class="container">
     <div [style.transform]="sliderTranslate" class="slider"></div>
   </div>
-  <p>
-    Counter Value {{ result }}
-  </p>
+
+  <!-- Storage Stats -->
+  <div class="stats-card">
+    <h3>📊 Storage Stats</h3>
+    <p>Bookings: {{ storageStats.bookings }}</p>
+    <p>Tickets: {{ storageStats.tickets }}</p>
+    <p>Pending Sync: {{ storageStats.pendingSync }}</p>
+  </div>
+
+  <!-- Test Buttons -->
+  <div class="button-group">
+    <button class="btn btn-primary" (click)="testSaveBooking()">
+      💾 Save Test Booking
+    </button>
+    <button class="btn btn-info" (click)="testLoadBookings()">
+      📋 Load All Bookings
+    </button>
+    <button class="btn btn-warning" (click)="testLoadPending()">
+      ⏳ Load Pending
+    </button>
+    <button class="btn btn-danger" (click)="testClearData()">
+      🗑️ Clear All Data
+    </button>
+  </div>
 </div>
