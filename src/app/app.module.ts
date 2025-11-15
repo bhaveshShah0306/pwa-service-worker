@@ -6,10 +6,22 @@ import { AppComponent } from './app.component';
 import { ExampleWorker } from './example.worker';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
+import { HomeComponent } from './features/home/home.component';
+import { SearchComponent } from './features/search/search.component';
+import { BookingComponent } from './features/booking/booking.component';
+import { MyBookingComponent } from './features/my-booking/my-booking.component';
+import { OfflineIndicatorComponent } from './shared/components/offline-indicator/offline-indicator.component';
+import { TicketCardComponent } from './shared/components/ticket-card/ticket-card.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    HomeComponent,
+    SearchComponent,
+    BookingComponent,
+    MyBookingComponent,
+    OfflineIndicatorComponent,
+    TicketCardComponent
   ],
   imports: [
     BrowserModule,
