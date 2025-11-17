@@ -1,1 +1,144 @@
-<p>booking works!</p>
+<div class="booking-container">
+  <div class="booking-header">
+    <button class="back-btn" (click)="router.navigate(['/'])">← Back</button>
+    <h1>Book Ticket</h1>
+  </div>
+
+  <div class="ticket-summary" *ngIf="ticket">
+    <div class="summary-row">
+      <span class="label">Route:</span>
+      <span class="value">{{ ticket.from }} → {{ ticket.to }}</span>
+    </div>
+    <div class="summary-row">
+      <span class="label">Date:</span>
+      <span class="value">{{ ticket.date | date : "mediumDate" }}</span>
+    </div>
+    <div class="summary-row">
+      <span class="label">Price per seat:</span>
+      <span class="value">₹{{ ticket.price }}</span>
+    </div>
+  </div>
+
+  <form
+    [formGroup]="bookingForm"
+    (ngSubmit)="submitBooking()"
+    class="booking-form"
+  >
+    <h2>👥 Passenger Details</h2>
+
+    <div formArrayName="passengers">
+      <div
+        *ngFor="let passenger of passengers.controls; let i = index"
+        class="passenger-card"
+        [formGroupName]="i"
+      >
+        <div class="passenger-header">
+          <h3>Passenger {{ i + 1 }}</h3>
+          <button
+            type="button"
+            class="remove-btn"
+            *ngIf="passengers.length > 1"
+            (click)="removePassenger(i)"
+          >
+            🗑️
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input
+            type="text"
+            formControlName="name"
+            placeholder="Enter full name"
+            class="form-control"
+          />
+          <span
+            class="error"
+            *ngIf="
+              passenger.get('name')?.invalid && passenger.get('name')?.touched
+            "
+          >
+            Name is required (min 3 characters)
+          </span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Age *</label>
+            <input
+              type="number"
+              formControlName="age"
+              placeholder="Age"
+              class="form-control"
+            />
+            <span
+              class="error"
+              *ngIf="
+                passenger.get('age')?.invalid && passenger.get('age')?.touched
+              "
+            >
+              Valid age required
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label>Gender *</label>
+            <select formControlName="gender" class="form-control">
+              <option value="">Select</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+            <span
+              class="error"
+              *ngIf="
+                passenger.get('gender')?.invalid &&
+                passenger.get('gender')?.touched
+              "
+            >
+              Gender required
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="add-passenger-btn"
+      (click)="addPassenger()"
+      *ngIf="passengers.length < 5"
+    >
+      ➕ Add Passenger
+    </button>
+
+    <div class="total-section">
+      <div class="total-row">
+        <span>Total Amount:</span>
+        <span class="total-amount">₹{{ getTotalAmount() }}</span>
+      </div>
+      <div class="passengers-count">{{ passengers.length }} passenger(s)</div>
+    </div>
+
+    <div class="offline-notice" *ngIf="!isOnline">
+      <span
+        >📴 You're offline. Booking will be saved locally and synced when
+        online.</span
+      >
+    </div>
+
+    <button
+      type="submit"
+      class="submit-btn"
+      [disabled]="isSubmitting || bookingForm.invalid"
+    >
+      {{
+        isSubmitting
+          ? "⏳ Processing..."
+          : isOnline
+          ? "✅ Confirm Booking"
+          : "💾 Save Offline"
+      }}
+    </button>
+  </form>
+</div>

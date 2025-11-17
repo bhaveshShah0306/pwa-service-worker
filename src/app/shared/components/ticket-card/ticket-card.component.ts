@@ -1,15 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+// src/app/shared/components/ticket-card/ticket-card.component.ts
+import { Component, Input, ViewEncapsulation } from '@angular/core';
+import { Ticket } from '../../../core/models/ticket.model';
 
 @Component({
   selector: 'app-ticket-card',
   templateUrl: './ticket-card.component.html',
-  styleUrls: ['./ticket-card.component.scss']
+  styleUrls: ['./ticket-card.component.scss'],
+  // Shadow DOM creates a boundary - styles from outside can't get in
+  encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class TicketCardComponent implements OnInit {
+export class TicketCardComponent {
+  @Input() ticket!: Ticket;
 
-  constructor() { }
-
-  ngOnInit(): void {
+  onBookTicket(): void {
+    console.log('Booking ticket:', this.ticket.id);
   }
-
 }

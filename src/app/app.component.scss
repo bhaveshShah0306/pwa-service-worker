@@ -1,11 +1,33 @@
+.app-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+// :host {
+//   display: flex;
+//   height: 100vh;
+//   width: 100vw;
+//   justify-content: center;
+//   align-items: center;
+//   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+//   color: white;
+// }
+
 :host {
+  background-color: #72385a;
+  color: white;
   display: flex;
-  height: 100vh;
-  width: 100vw;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  height: 100vh;
+}
+
+.small-image {
+  height: 100px;
+}
+
+.large-image {
+  height: 300px;
 }
 
 .center {

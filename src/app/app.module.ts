@@ -1,17 +1,37 @@
+// src/app/app.module.ts
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { WorkerModule } from 'angular-web-worker/angular'
+import { RouterModule, Routes } from '@angular/router';
+import { ReactiveFormsModule } from '@angular/forms';
+import { WorkerModule } from 'angular-web-worker/angular';
 
 import { AppComponent } from './app.component';
 import { ExampleWorker } from './example.worker';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
+import { ImageSwapDirective } from './image-swap.directive';
+
+import { TicketActionsComponent } from './shared/components/ticket-actions/ticket-actions.component';
+import { TicketCardComponent } from './shared/components/ticket-card/ticket-card.component';
+import { OfflineIndicatorComponent } from './shared/components/offline-indicator/offline-indicator.component';
+
 import { HomeComponent } from './features/home/home.component';
-import { SearchComponent } from './features/search/search.component';
 import { BookingComponent } from './features/booking/booking.component';
 import { MyBookingComponent } from './features/my-booking/my-booking.component';
-import { OfflineIndicatorComponent } from './shared/components/offline-indicator/offline-indicator.component';
-import { TicketCardComponent } from './shared/components/ticket-card/ticket-card.component';
+import { SearchComponent } from './features/search/search.component';
+
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
+const routes: Routes = [
+  { path: '', component: HomeComponent },
+  { path: 'search', component: SearchComponent },
+  { path: 'booking/:ticketId', component: BookingComponent },
+  { path: 'my-bookings', component: MyBookingComponent },
+  { path: '**', redirectTo: '' },
+];
 
 @NgModule({
   declarations: [
@@ -21,22 +41,34 @@ import { TicketCardComponent } from './shared/components/ticket-card/ticket-card
     BookingComponent,
     MyBookingComponent,
     OfflineIndicatorComponent,
-    TicketCardComponent
+    TicketCardComponent,
+    ImageSwapDirective,
+    TicketActionsComponent,
+    TicketActionsComponent,
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
+    ReactiveFormsModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    RouterModule.forRoot(routes),
     WorkerModule.forWorkers([
-      {worker: ExampleWorker, initFn: () => new Worker(new URL('./example.worker.ts', import.meta.url), {type: 'module'})},
-      // {worker: ExampleWorker, initFn: () => new Worker('./example.worker.ts', {type: 'module'})},
+      {
+        worker: ExampleWorker,
+        initFn: () =>
+          new Worker(new URL('./example.worker.ts', import.meta.url), {
+            type: 'module',
+          }),
+      },
     ]),
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
-      // Register the ServiceWorker as soon as the app is stable
-      // or after 30 seconds (whichever comes first).
-      registrationStrategy: 'registerWhenStable:30000'
-    })
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}
