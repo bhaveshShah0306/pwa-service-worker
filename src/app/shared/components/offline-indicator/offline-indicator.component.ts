@@ -1,33 +1,47 @@
 // src/app/shared/components/offline-indicator/offline-indicator.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { NetworkService } from '../../../core/services/network.service';
-import { OfflineStorageService } from '../../../core/services/offline-storage.service';
+import { SyncService, SyncStatus } from '../../../core/services/sync.service';
 
 @Component({
   selector: 'app-offline-indicator',
   templateUrl: './offline-indicator.component.html',
   styleUrls: ['./offline-indicator.component.scss'],
 })
-export class OfflineIndicatorComponent implements OnInit {
+export class OfflineIndicatorComponent implements OnInit, OnDestroy {
   isOnline = true;
   pendingCount = 0;
+  isSyncing = false;
+
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private networkService: NetworkService,
-    private offlineStorage: OfflineStorageService
+    private syncService: SyncService
   ) {}
 
   async ngOnInit(): Promise<void> {
-    this.networkService.isOnline$.subscribe(async (status) => {
+    // Monitor network status
+    const networkSub = this.networkService.isOnline$.subscribe((status) => {
       this.isOnline = status;
-      await this.updatePendingCount();
     });
+    this.subscriptions.push(networkSub);
 
-    await this.updatePendingCount();
+    // Monitor sync status
+    const syncSub = this.syncService
+      .getSyncStatus()
+      .subscribe((status: SyncStatus) => {
+        this.pendingCount = status.pendingCount;
+        this.isSyncing = status.isSyncing;
+      });
+    this.subscriptions.push(syncSub);
+
+    // Initial update
+    await this.syncService.updatePendingCount();
   }
 
-  private async updatePendingCount(): Promise<void> {
-    const stats = await this.offlineStorage.getStorageStats();
-    this.pendingCount = stats.pendingSync;
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 }

@@ -3,8 +3,9 @@
 .search-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  background-attachment: fixed; // ✅ FIX: Keeps background fixed on scroll
+  background-attachment: fixed;
   padding-bottom: 40px;
+  padding-top: 80px; // Add padding for offline indicator
 
   // ========== SEARCH HEADER ==========
   .search-header {

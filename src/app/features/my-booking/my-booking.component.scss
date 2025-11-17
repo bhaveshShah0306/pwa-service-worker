@@ -160,7 +160,21 @@
         }
       }
     }
+    select.form-control {
+      cursor: pointer;
+      appearance: auto; // Use browser default for better visibility
 
+      option {
+        background: #2c3e50; // Dark background
+        color: white; // White text
+        padding: 8px;
+
+        &:checked {
+          background: #3498db; // Blue when selected
+          color: white;
+        }
+      }
+    }
     .sync-actions {
       .sync-btn {
         padding: 10px 20px;

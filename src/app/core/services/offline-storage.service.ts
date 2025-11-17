@@ -186,4 +186,13 @@ export class OfflineStorageService {
       return { bookings: 0, tickets: 0, pendingSync: 0 };
     }
   }
+  async updateBooking(id: string, updates: Partial<Booking>): Promise<void> {
+    try {
+      await this.db.bookings.update(id, updates);
+      console.log(`✅ Booking ${id} updated`);
+    } catch (error) {
+      console.error('❌ Failed to update booking:', error);
+      throw error;
+    }
+  }
 }

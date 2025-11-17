@@ -1,3 +1,4 @@
+// src/app/features/my-booking/my-booking.component.ts
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { OfflineStorageService } from '../../core/services/offline-storage.service';
@@ -132,7 +133,7 @@ export class MyBookingComponent implements OnInit {
     this.filteredBookings = result;
   }
 
-  // Cancel booking
+  // Cancel booking - FIX: Properly update the booking status
   async cancelBooking(booking: Booking): Promise<void> {
     if (!confirm('Are you sure you want to cancel this booking?')) {
       return;
@@ -140,9 +141,11 @@ export class MyBookingComponent implements OnInit {
 
     try {
       if (booking.id) {
-        // Update status to cancelled
-        const updatedBooking: Booking = { ...booking, status: 'cancelled' };
-        await this.offlineStorage.saveBooking(updatedBooking);
+        // Use the new updateBooking method for cleaner updates
+        await this.offlineStorage.updateBooking(booking.id, {
+          status: 'cancelled',
+          syncStatus: this.isOnline ? 'synced' : 'pending',
+        });
 
         alert('✅ Booking cancelled successfully');
         await this.loadBookings();
@@ -171,14 +174,14 @@ export class MyBookingComponent implements OnInit {
     }
   }
 
-  // Sync all pending bookings
+  // Sync all pending bookings - FIX: Actually update the status
   async syncPendingBookings(): Promise<void> {
     const pendingBookings = this.bookings.filter(
       (b) => b.syncStatus === 'pending'
     );
 
     if (pendingBookings.length === 0) {
-      alert('✅ All bookings are already synced');
+      // Don't show alert if there's nothing to sync
       return;
     }
 
@@ -188,17 +191,18 @@ export class MyBookingComponent implements OnInit {
     }
 
     try {
-      // Simulate API sync
+      // Update each pending booking
       for (const booking of pendingBookings) {
         if (booking.id) {
-          await this.offlineStorage.updateBookingSyncStatus(
-            booking.id,
-            'synced'
-          );
+          // Use updateBooking for cleaner updates
+          await this.offlineStorage.updateBooking(booking.id, {
+            syncStatus: 'synced',
+            status: 'confirmed', // Confirm the booking when synced
+          });
         }
       }
 
-      alert(`✅ ${pendingBookings.length} booking(s) synced successfully`);
+      alert(`✅ ${pendingBookings.length} booking(s) synced and confirmed`);
       await this.loadBookings();
     } catch (error) {
       console.error('Sync failed:', error);
@@ -208,15 +212,28 @@ export class MyBookingComponent implements OnInit {
 
   // View booking details
   viewBookingDetails(booking: BookingWithTicket): void {
-    console.log('Booking details:', booking);
-    // Could navigate to a detail page or show a modal
-    alert(`
-      Booking ID: ${booking.id}
-      Route: ${booking.ticketDetails?.from} → ${booking.ticketDetails?.to}
-      Passengers: ${booking.passengers.length}
-      Total Amount: ₹${booking.totalAmount}
-      Status: ${booking.status}
-    `);
+    const details = `
+Booking ID: ${booking.id || 'N/A'}
+Route: ${booking.ticketDetails?.from || 'N/A'} → ${
+      booking.ticketDetails?.to || 'N/A'
+    }
+Date: ${
+      booking.ticketDetails?.date
+        ? new Date(booking.ticketDetails.date).toLocaleDateString()
+        : 'N/A'
+    }
+Passengers: ${booking.passengers.length}
+Total Amount: ₹${booking.totalAmount}
+Status: ${booking.status.toUpperCase()}
+Sync Status: ${booking.syncStatus.toUpperCase()}
+
+Passenger Details:
+${booking.passengers
+  .map((p, i) => `${i + 1}. ${p.name} (${p.age}yrs, ${p.gender})`)
+  .join('\n')}
+    `.trim();
+
+    alert(details);
   }
 
   // Navigate to search
