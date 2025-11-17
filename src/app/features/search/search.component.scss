@@ -3,6 +3,7 @@
 .search-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-attachment: fixed; // ✅ FIX: Keeps background fixed on scroll
   padding-bottom: 40px;
 
   // ========== SEARCH HEADER ==========
@@ -108,8 +109,8 @@
             }
           }
 
-          // Select specific
-          select {
+          // ✅ FIX: Select dropdown visibility
+          &[type="select"] {
             cursor: pointer;
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
@@ -117,9 +118,35 @@
             background-position: right 12px center;
             padding-right: 40px;
 
-            &option {
+            // ✅ FIX: Dropdown options with dark background and white text
+            option {
               background: #764ba2;
               color: white;
+              padding: 8px;
+
+              &:hover {
+                background: #667eea;
+              }
+            }
+          }
+        }
+
+        select.form-control {
+          cursor: pointer;
+          appearance: none;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 12px center;
+          padding-right: 40px;
+
+          // ✅ FIX: Dropdown options with dark background and white text
+          option {
+            background: #764ba2;
+            color: white;
+            padding: 8px;
+
+            &:hover {
+              background: #667eea;
             }
           }
         }
@@ -405,127 +432,6 @@
 
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
-    }
-  }
-
-  // ========== SIMPLE TICKET CARDS (Alternative) ==========
-  .tickets-grid-simple {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 20px;
-
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
-    }
-
-    .ticket-card-simple {
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      padding: 20px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      color: white;
-
-      &:hover {
-        transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.25);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-      }
-
-      .ticket-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
-
-        .ticket-type {
-          padding: 6px 12px;
-          border-radius: 20px;
-          font-size: 0.85rem;
-          font-weight: 600;
-          background: rgba(255, 255, 255, 0.2);
-
-          &.train {
-            background: rgba(46, 213, 115, 0.3);
-          }
-          &.bus {
-            background: rgba(243, 156, 18, 0.3);
-          }
-          &.flight {
-            background: rgba(52, 152, 219, 0.3);
-          }
-        }
-
-        .ticket-price {
-          font-size: 1.5rem;
-          font-weight: bold;
-        }
-      }
-
-      .ticket-route {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 15px;
-
-        .location {
-          display: flex;
-          flex-direction: column;
-
-          .location-label {
-            font-size: 0.75rem;
-            opacity: 0.7;
-          }
-
-          .location-name {
-            font-size: 1.1rem;
-            font-weight: 600;
-          }
-        }
-
-        .arrow {
-          font-size: 1.5rem;
-          opacity: 0.5;
-        }
-      }
-
-      .ticket-footer {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.9rem;
-        opacity: 0.8;
-        margin-bottom: 15px;
-
-        .ticket-seats.low {
-          color: #ff6b6b;
-          font-weight: 600;
-        }
-      }
-
-      .book-btn {
-        width: 100%;
-        padding: 12px;
-        background: rgba(46, 213, 115, 0.9);
-        border: none;
-        border-radius: 10px;
-        color: white;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-
-        &:hover:not(:disabled) {
-          background: rgba(46, 213, 115, 1);
-        }
-
-        &:disabled {
-          background: rgba(255, 107, 107, 0.5);
-          cursor: not-allowed;
-        }
-      }
     }
   }
 }
