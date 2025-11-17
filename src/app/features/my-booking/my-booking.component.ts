@@ -181,14 +181,13 @@ export class MyBookingComponent implements OnInit {
     }
   }
 
-  // Sync all pending bookings - update the status
+  // Sync all pending bookings - FIXED VERSION
   async syncPendingBookings(): Promise<void> {
     const pendingBookings = this.bookings.filter(
       (b) => b.syncStatus === 'pending'
     );
 
     if (pendingBookings.length === 0) {
-      // Don't show alert if there's nothing to sync
       return;
     }
 
@@ -198,17 +197,30 @@ export class MyBookingComponent implements OnInit {
     }
 
     try {
-      // Update each pending booking
+      console.log(`🔄 Syncing ${pendingBookings.length} pending bookings...`);
+
+      // Update each pending booking in IndexedDB
       for (const booking of pendingBookings) {
         if (booking.id !== undefined) {
-          await this.offlineStorage.updateBooking(booking.id, {
-            syncStatus: 'synced',
-            status: 'confirmed', // Confirm the booking when synced
-          });
+          // Use updateBookingSyncStatus which directly updates the DB
+          await this.offlineStorage.updateBookingSyncStatus(
+            booking.id,
+            'synced'
+          );
+
+          // Also update the status to confirmed
+          await this.offlineStorage.updateBookingStatus(
+            booking.id,
+            'confirmed'
+          );
+
+          console.log(`✅ Synced booking ID: ${booking.id}`);
         }
       }
 
       alert(`✅ ${pendingBookings.length} booking(s) synced and confirmed`);
+
+      // Reload bookings to reflect changes
       await this.loadBookings();
     } catch (error) {
       console.error('Sync failed:', error);

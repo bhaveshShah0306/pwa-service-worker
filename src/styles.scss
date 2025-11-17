@@ -1,1 +1,77 @@
-/* You can add global styles to this file, and also import other style files */
+/* src/styles.scss */
+
+// Import Angular Material theming
+@import "@angular/material/prebuilt-themes/indigo-pink.css";
+
+// Global Reset
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Custom Material Theme Overrides
+.mat-raised-button {
+  text-transform: uppercase !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+}
+
+.mat-card {
+  overflow: hidden !important;
+}
+
+// Scrollbar Styles
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.5);
+  }
+}
+
+// Loading Animation
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+// Utility Classes
+.hidden {
+  display: none !important;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
