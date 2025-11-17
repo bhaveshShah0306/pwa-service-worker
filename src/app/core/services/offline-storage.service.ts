@@ -36,13 +36,13 @@ export class OfflineStorageService {
 
   // ========== BOOKING METHODS ==========
 
-  async saveBooking(booking: Booking): Promise<string | undefined> {
+  async saveBooking(booking: Booking): Promise<number | undefined> {
     try {
       booking.createdAt = new Date();
       booking.syncStatus = navigator.onLine ? 'synced' : 'pending';
       const id = await this.db.bookings.add(booking);
-      console.log('💾 Booking saved:', id);
-      return id?.toString();
+      console.log('💾 Booking saved with ID:', id, 'Type:', typeof id);
+      return id;
     } catch (error) {
       console.error('❌ Failed to save booking:', error);
       throw error;
@@ -58,9 +58,11 @@ export class OfflineStorageService {
     }
   }
 
-  async getBookingById(id: string): Promise<Booking | undefined> {
+  async getBookingById(id: string | number): Promise<Booking | undefined> {
     try {
-      return await this.db.bookings.get(id);
+      // Convert string ID to number if needed
+      const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+      return await this.db.bookings.get(numericId);
     } catch (error) {
       console.error('❌ Failed to get booking:', error);
       return undefined;
@@ -79,21 +81,83 @@ export class OfflineStorageService {
     }
   }
 
+  // NEW: Update entire booking
+  async updateBooking(id: string, updates: Partial<Booking>): Promise<void> {
+    try {
+      await this.db.bookings.update(id, updates);
+      console.log(`✅ Booking ${id} updated`);
+    } catch (error) {
+      console.error('❌ Failed to update booking:', error);
+      throw error;
+    }
+  }
+
+  // NEW: Update entire booking with partial updates
+  async updateBooking(
+    id: string | number,
+    updates: Partial<Booking>
+  ): Promise<number> {
+    try {
+      // Convert string ID to number if needed (since we're using ++id auto-increment)
+      const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+
+      const result = await this.db.bookings.update(numericId, updates);
+
+      if (result === 0) {
+        console.warn(`⚠️ Booking ${id} not found for update`);
+      } else {
+        console.log(`✅ Booking ${id} updated:`, updates);
+      }
+
+      return result;
+    } catch (error) {
+      console.error('❌ Failed to update booking:', error);
+      throw error;
+    }
+  }
+
   async updateBookingSyncStatus(
-    id: string,
+    id: string | number,
     status: 'synced' | 'pending' | 'failed'
   ): Promise<void> {
     try {
-      await this.db.bookings.update(id, { syncStatus: status });
-      console.log(`✅ Booking ${id} sync status updated to ${status}`);
+      // Convert string ID to number if needed
+      const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+
+      const result = await this.db.bookings.update(numericId, {
+        syncStatus: status,
+      });
+
+      if (result === 0) {
+        console.warn(`⚠️ Booking ${id} not found for sync status update`);
+      } else {
+        console.log(`✅ Booking ${id} sync status updated to ${status}`);
+      }
     } catch (error) {
       console.error('❌ Failed to update booking sync status:', error);
     }
   }
 
-  async deleteBooking(id: string): Promise<void> {
+  // NEW: Update booking status
+  async updateBookingStatus(
+    id: string,
+    status: 'pending' | 'confirmed' | 'cancelled'
+  ): Promise<void> {
     try {
-      await this.db.bookings.delete(id);
+      await this.db.bookings.update(id, { status });
+      console.log(`✅ Booking ${id} status updated to ${status}`);
+    } catch (error) {
+      console.error('❌ Failed to update booking status:', error);
+      throw error;
+    }
+  }
+
+  async deleteBooking(id: string | number): Promise<void> {
+    try {
+      // Convert string ID to number if needed
+      const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+
+      await this.db.bookings.delete(numericId);
       console.log(`🗑️ Booking ${id} deleted`);
     } catch (error) {
       console.error('❌ Failed to delete booking:', error);
@@ -184,15 +248,6 @@ export class OfflineStorageService {
     } catch (error) {
       console.error('❌ Failed to get storage stats:', error);
       return { bookings: 0, tickets: 0, pendingSync: 0 };
-    }
-  }
-  async updateBooking(id: string, updates: Partial<Booking>): Promise<void> {
-    try {
-      await this.db.bookings.update(id, updates);
-      console.log(`✅ Booking ${id} updated`);
-    } catch (error) {
-      console.error('❌ Failed to update booking:', error);
-      throw error;
     }
   }
 }

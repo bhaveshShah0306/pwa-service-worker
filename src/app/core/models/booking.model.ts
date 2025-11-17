@@ -1,7 +1,8 @@
+// src/app/core/models/booking.model.ts
 import { Passenger } from './passenger.model';
 
 export interface Booking {
-  id?: string;
+  id?: number;
   ticketId: string;
   passengers: Passenger[];
   totalAmount: number;
