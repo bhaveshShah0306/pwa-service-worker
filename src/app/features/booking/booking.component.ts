@@ -90,11 +90,12 @@ export class BookingComponent implements OnInit {
     };
 
     try {
+      // saveBooking now returns a number (the auto-incremented ID)
       const bookingId = await this.offlineStorage.saveBooking(booking);
 
       const message = this.isOnline
-        ? '✅ Booking confirmed!'
-        : '💾 Booking saved offline. Will sync when online.';
+        ? `✅ Booking confirmed! Booking ID: ${bookingId}`
+        : `💾 Booking saved offline (ID: ${bookingId}). Will sync when online.`;
 
       alert(message);
       this.router.navigate(['/my-bookings']);

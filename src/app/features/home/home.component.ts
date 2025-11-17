@@ -2,6 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { OfflineStorageService } from '../../core/services/offline-storage.service';
+import { DataInitService } from '../../core/services/data-init.service';
 import { Ticket } from '../../core/models/ticket.model';
 
 @Component({
@@ -15,22 +16,22 @@ export class HomeComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private offlineStorage: OfflineStorageService
+    private offlineStorage: OfflineStorageService,
+    private dataInitService: DataInitService
   ) {}
 
   async ngOnInit(): Promise<void> {
+    // Initialize sample data if needed
+    await this.dataInitService.initializeSampleData();
+
+    // Load tickets and stats
     await this.loadTickets();
     await this.loadStats();
   }
 
   searchTickets() {
-    // From home component
+    // Navigate to search
     this.router.navigate(['/search']);
-
-    // From anywhere with route data
-    this.router.navigate(['/search'], {
-      queryParams: { from: 'Delhi', to: 'Mumbai' },
-    });
   }
 
   private async loadTickets(): Promise<void> {

@@ -133,22 +133,29 @@ export class MyBookingComponent implements OnInit {
     this.filteredBookings = result;
   }
 
-  // Cancel booking - FIX: Properly update the booking status
+  // Cancel booking - properly update the booking status
   async cancelBooking(booking: Booking): Promise<void> {
     if (!confirm('Are you sure you want to cancel this booking?')) {
       return;
     }
 
     try {
-      if (booking.id) {
-        // Use the new updateBooking method for cleaner updates
-        await this.offlineStorage.updateBooking(booking.id, {
-          status: 'cancelled',
-          syncStatus: this.isOnline ? 'synced' : 'pending',
-        });
+      if (booking.id !== undefined) {
+        // Update the booking with cancelled status
+        const updateCount = await this.offlineStorage.updateBooking(
+          booking.id,
+          {
+            status: 'cancelled',
+            syncStatus: this.isOnline ? 'synced' : 'pending',
+          }
+        );
 
-        alert('✅ Booking cancelled successfully');
-        await this.loadBookings();
+        if (updateCount > 0) {
+          alert('✅ Booking cancelled successfully');
+          await this.loadBookings();
+        } else {
+          alert('⚠️ Booking not found');
+        }
       }
     } catch (error) {
       console.error('Failed to cancel booking:', error);
@@ -163,7 +170,7 @@ export class MyBookingComponent implements OnInit {
     }
 
     try {
-      if (booking.id) {
+      if (booking.id !== undefined) {
         await this.offlineStorage.deleteBooking(booking.id);
         alert('🗑️ Booking deleted successfully');
         await this.loadBookings();
@@ -174,7 +181,7 @@ export class MyBookingComponent implements OnInit {
     }
   }
 
-  // Sync all pending bookings - FIX: Actually update the status
+  // Sync all pending bookings - update the status
   async syncPendingBookings(): Promise<void> {
     const pendingBookings = this.bookings.filter(
       (b) => b.syncStatus === 'pending'
@@ -193,8 +200,7 @@ export class MyBookingComponent implements OnInit {
     try {
       // Update each pending booking
       for (const booking of pendingBookings) {
-        if (booking.id) {
-          // Use updateBooking for cleaner updates
+        if (booking.id !== undefined) {
           await this.offlineStorage.updateBooking(booking.id, {
             syncStatus: 'synced',
             status: 'confirmed', // Confirm the booking when synced
@@ -213,7 +219,7 @@ export class MyBookingComponent implements OnInit {
   // View booking details
   viewBookingDetails(booking: BookingWithTicket): void {
     const details = `
-Booking ID: ${booking.id || 'N/A'}
+Booking ID: ${booking.id !== undefined ? booking.id : 'N/A'}
 Route: ${booking.ticketDetails?.from || 'N/A'} → ${
       booking.ticketDetails?.to || 'N/A'
     }

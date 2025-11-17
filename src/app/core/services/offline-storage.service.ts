@@ -5,7 +5,7 @@ import { Ticket } from '../models/ticket.model';
 import { Injectable } from '@angular/core';
 
 export class OfflineDatabase extends Dexie {
-  bookings!: Dexie.Table<Booking, string>;
+  bookings!: Dexie.Table<Booking, number>;
   tickets!: Dexie.Table<Ticket, string>;
 
   constructor() {
@@ -36,12 +36,12 @@ export class OfflineStorageService {
 
   // ========== BOOKING METHODS ==========
 
-  async saveBooking(booking: Booking): Promise<number | undefined> {
+  async saveBooking(booking: Booking): Promise<number> {
     try {
       booking.createdAt = new Date();
       booking.syncStatus = navigator.onLine ? 'synced' : 'pending';
       const id = await this.db.bookings.add(booking);
-      console.log('💾 Booking saved with ID:', id, 'Type:', typeof id);
+      console.log('💾 Booking saved with ID:', id);
       return id;
     } catch (error) {
       console.error('❌ Failed to save booking:', error);
@@ -60,7 +60,6 @@ export class OfflineStorageService {
 
   async getBookingById(id: string | number): Promise<Booking | undefined> {
     try {
-      // Convert string ID to number if needed
       const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
       return await this.db.bookings.get(numericId);
     } catch (error) {
@@ -81,24 +80,12 @@ export class OfflineStorageService {
     }
   }
 
-  // NEW: Update entire booking
-  async updateBooking(id: string, updates: Partial<Booking>): Promise<void> {
-    try {
-      await this.db.bookings.update(id, updates);
-      console.log(`✅ Booking ${id} updated`);
-    } catch (error) {
-      console.error('❌ Failed to update booking:', error);
-      throw error;
-    }
-  }
-
-  // NEW: Update entire booking with partial updates
+  // Update entire booking with partial updates
   async updateBooking(
     id: string | number,
     updates: Partial<Booking>
   ): Promise<number> {
     try {
-      // Convert string ID to number if needed (since we're using ++id auto-increment)
       const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
 
       const result = await this.db.bookings.update(numericId, updates);
@@ -121,7 +108,6 @@ export class OfflineStorageService {
     status: 'synced' | 'pending' | 'failed'
   ): Promise<void> {
     try {
-      // Convert string ID to number if needed
       const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
 
       const result = await this.db.bookings.update(numericId, {
@@ -138,13 +124,14 @@ export class OfflineStorageService {
     }
   }
 
-  // NEW: Update booking status
+  // Update booking status
   async updateBookingStatus(
-    id: string,
+    id: string | number,
     status: 'pending' | 'confirmed' | 'cancelled'
   ): Promise<void> {
     try {
-      await this.db.bookings.update(id, { status });
+      const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+      await this.db.bookings.update(numericId, { status });
       console.log(`✅ Booking ${id} status updated to ${status}`);
     } catch (error) {
       console.error('❌ Failed to update booking status:', error);
@@ -154,9 +141,7 @@ export class OfflineStorageService {
 
   async deleteBooking(id: string | number): Promise<void> {
     try {
-      // Convert string ID to number if needed
       const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
-
       await this.db.bookings.delete(numericId);
       console.log(`🗑️ Booking ${id} deleted`);
     } catch (error) {
