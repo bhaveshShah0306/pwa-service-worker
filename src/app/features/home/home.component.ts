@@ -23,6 +23,16 @@ export class HomeComponent implements OnInit {
     await this.loadStats();
   }
 
+  searchTickets() {
+    // From home component
+    this.router.navigate(['/search']);
+
+    // From anywhere with route data
+    this.router.navigate(['/search'], {
+      queryParams: { from: 'Delhi', to: 'Mumbai' },
+    });
+  }
+
   private async loadTickets(): Promise<void> {
     this.tickets = await this.offlineStorage.getCachedTickets();
   }
