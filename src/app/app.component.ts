@@ -10,8 +10,8 @@ import { Component } from '@angular/core';
 export class AppComponent {
   title = 'Travel Booking App';
 
-  isSmallImage: boolean = false;
-  isWelcome: boolean = true;
+  isSmallImage = false;
+  isWelcome = true;
   toggleImageSize(): void {
     this.isSmallImage = !this.isSmallImage;
   }

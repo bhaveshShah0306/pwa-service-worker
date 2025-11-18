@@ -175,7 +175,7 @@ export class OfflineStorageService {
     date?: Date
   ): Promise<Ticket[]> {
     try {
-      let query = this.db.tickets.where('[from+to]').equals([from, to]);
+      const query = this.db.tickets.where('[from+to]').equals([from, to]);
 
       if (date) {
         const tickets = await query.toArray();
