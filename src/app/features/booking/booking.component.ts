@@ -1,22 +1,27 @@
-// src/app/features/booking/booking.component.ts
-import { Component, OnInit } from '@angular/core';
+// BOOKING COMPONENT TYPESCRIPT (booking.component.ts)
+// Fixed for WCAG 2.0 AA Accessibility
+
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OfflineStorageService } from '../../core/services/offline-storage.service';
 import { NetworkService } from '../../core/services/network.service';
 import { Ticket } from '../../core/models/ticket.model';
 import { Booking } from '../../core/models/booking.model';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-booking',
   templateUrl: './booking.component.html',
   styleUrls: ['./booking.component.scss'],
 })
-export class BookingComponent implements OnInit {
+export class BookingComponent implements OnInit, OnDestroy {
   bookingForm!: FormGroup;
-  ticket: Ticket | null = null;
+  ticket!: Ticket;
   isOnline = true;
   isSubmitting = false;
+
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -30,16 +35,35 @@ export class BookingComponent implements OnInit {
     // Load ticket
     const ticketId = this.route.snapshot.paramMap.get('ticketId');
     if (ticketId) {
-      this.ticket = (await this.offlineStorage.getTicketById(ticketId)) || null;
+      const loadedTicket = await this.offlineStorage.getTicketById(ticketId);
+      if (loadedTicket) {
+        this.ticket = loadedTicket;
+      }
     }
 
-    // Monitor network
-    this.networkService.isOnline$.subscribe((status): void => {
-      this.isOnline = status;
-    });
+    // Monitor network with proper subscription cleanup
+    const networkSub = this.networkService.isOnline$.subscribe(
+      (status): void => {
+        this.isOnline = status;
+      }
+    );
+    this.subscriptions.push(networkSub);
 
     // Initialize form
     this.initForm();
+
+    // Focus on main heading for accessibility
+    setTimeout(() => {
+      const mainHeading = document.querySelector('h1');
+      if (mainHeading instanceof HTMLElement) {
+        mainHeading.focus({ preventScroll: true });
+      }
+    }, 100);
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscriptions
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
   private initForm(): void {
@@ -63,18 +87,30 @@ export class BookingComponent implements OnInit {
   addPassenger(): void {
     if (this.passengers.length < 5) {
       this.passengers.push(this.createPassengerForm());
+      // Announce to screen readers
+      this.announceToScreenReader(
+        `Passenger ${this.passengers.length} form added. Please fill in the required details.`
+      );
     }
   }
 
   removePassenger(index: number): void {
     if (this.passengers.length > 1) {
       this.passengers.removeAt(index);
+      // Announce to screen readers
+      this.announceToScreenReader(
+        `Passenger ${index + 1} removed. ${
+          this.passengers.length
+        } passenger(s) remaining.`
+      );
     }
   }
 
   async submitBooking(): Promise<void> {
     if (this.bookingForm.invalid || !this.ticket) {
-      alert('Please fill all required fields');
+      this.announceToScreenReader(
+        'Please fill all required fields before submitting'
+      );
       return;
     }
 
@@ -90,17 +126,19 @@ export class BookingComponent implements OnInit {
     };
 
     try {
-      // saveBooking now returns a number (the auto-incremented ID)
       const bookingId = await this.offlineStorage.saveBooking(booking);
 
       const message = this.isOnline
-        ? `✅ Booking confirmed! Booking ID: ${bookingId}`
-        : `💾 Booking saved offline (ID: ${bookingId}). Will sync when online.`;
+        ? `Booking confirmed! Booking ID: ${bookingId}`
+        : `Booking saved offline (ID: ${bookingId}). Will sync when online.`;
 
+      this.announceToScreenReader(message);
       alert(message);
       this.router.navigate(['/my-bookings']);
     } catch (error) {
-      alert('❌ Failed to save booking');
+      const errorMessage = 'Failed to save booking';
+      this.announceToScreenReader(errorMessage);
+      alert(`❌ ${errorMessage}`);
       console.error(error);
     } finally {
       this.isSubmitting = false;
@@ -109,5 +147,21 @@ export class BookingComponent implements OnInit {
 
   getTotalAmount(): number {
     return this.ticket ? this.ticket.price * this.passengers.length : 0;
+  }
+
+  private announceToScreenReader(message: string): void {
+    // Create a live region announcement for screen readers
+    const announcement = document.createElement('div');
+    announcement.setAttribute('role', 'status');
+    announcement.setAttribute('aria-live', 'polite');
+    announcement.setAttribute('aria-atomic', 'true');
+    announcement.className = 'sr-only';
+    announcement.textContent = message;
+    document.body.appendChild(announcement);
+
+    // Remove after announcement
+    setTimeout(() => {
+      announcement.remove();
+    }, 1000);
   }
 }

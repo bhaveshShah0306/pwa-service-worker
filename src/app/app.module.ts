@@ -2,14 +2,10 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule, Routes } from '@angular/router';
-import { ReactiveFormsModule } from '@angular/forms';
-import { WorkerModule } from 'angular-web-worker/angular';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 import { AppComponent } from './app.component';
-import { ExampleWorker } from './example.worker';
-import { ServiceWorkerModule } from '@angular/service-worker';
-import { environment } from '../environments/environment';
-import { ImageSwapDirective } from './image-swap.directive';
 
 import { TicketActionsComponent } from './shared/components/ticket-actions/ticket-actions.component';
 import { TicketCardComponent } from './shared/components/ticket-card/ticket-card.component';
@@ -42,31 +38,18 @@ const routes: Routes = [
     MyBookingComponent,
     OfflineIndicatorComponent,
     TicketCardComponent,
-    ImageSwapDirective,
-    TicketActionsComponent,
     TicketActionsComponent,
   ],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
+    CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     MatCardModule,
     MatButtonModule,
     MatIconModule,
     RouterModule.forRoot(routes),
-    WorkerModule.forWorkers([
-      {
-        worker: ExampleWorker,
-        initFn: () =>
-          new Worker(new URL('./example.worker.ts', import.meta.url), {
-            type: 'module',
-          }),
-      },
-    ]),
-    ServiceWorkerModule.register('ngsw-worker.js', {
-      enabled: environment.production,
-      registrationStrategy: 'registerWhenStable:30000',
-    }),
   ],
   providers: [],
   bootstrap: [AppComponent],
