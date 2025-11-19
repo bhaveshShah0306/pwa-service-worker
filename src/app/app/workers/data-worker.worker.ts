@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 
 import Dexie from 'dexie';
+import { UpdateBookingPayload } from 'src/app/core/models/booking-payload.model';
 
 // ==================== TYPE DEFINITIONS ====================
 
@@ -89,12 +90,12 @@ function sendResponse(response: WorkerResponse): void {
   postMessage(response);
 }
 
-function sendError(id: string, type: WorkerMessageType, error: any): void {
+function sendError(id: string, type: WorkerMessageType, error: unknown): void {
   sendResponse({
     id,
     type,
     success: false,
-    error: error.message || String(error),
+    error: error instanceof Error ? error.message : String(error),
   });
 }
 
@@ -215,7 +216,7 @@ async function syncPendingBookings(): Promise<SyncResult> {
   for (let i = 0; i < pendingBookings.length; i += batchSize) {
     const batch = pendingBookings.slice(i, i + batchSize);
 
-    const batchResults = await Promise.allSettled(
+    const _batchResults = await Promise.allSettled(
       batch.map(async (booking) => {
         try {
           await simulateApiSync(booking);
@@ -244,6 +245,10 @@ async function syncPendingBookings(): Promise<SyncResult> {
         }
       })
     );
+    console.log(`[Worker] Batch ${i / batchSize + 1} completed:`, {
+      fulfilled: _batchResults.filter((r) => r.status === 'fulfilled').length,
+      rejected: _batchResults.filter((r) => r.status === 'rejected').length,
+    });
   }
 
   console.log(
@@ -351,7 +356,7 @@ async function handleMessage(message: WorkerMessage): Promise<void> {
         break;
 
       case 'SAVE_BOOKING': {
-        const bookingId = await saveBooking(payload);
+        const bookingId = await saveBooking(payload as Booking);
         sendResponse({ id, type, success: true, data: bookingId });
         break;
       }
@@ -363,26 +368,37 @@ async function handleMessage(message: WorkerMessage): Promise<void> {
       }
 
       case 'UPDATE_BOOKING': {
-        const { bookingId: updateId, updates } = payload;
-        const updateCount = await updateBooking(updateId, updates);
+        const updatePayload = payload as UpdateBookingPayload;
+        const updateCount = await updateBooking(
+          updatePayload.bookingId,
+          updatePayload.updates
+        );
         sendResponse({ id, type, success: true, data: updateCount });
         break;
       }
 
       case 'DELETE_BOOKING':
-        await deleteBooking(payload);
+        await deleteBooking(payload as number);
         sendResponse({ id, type, success: true });
         break;
 
       case 'SEARCH_TICKETS': {
-        const { from, to, date } = payload;
-        const tickets = await searchTickets(from, to, date);
+        const searchPayload = payload as {
+          from: string;
+          to: string;
+          date?: Date;
+        };
+        const tickets = await searchTickets(
+          searchPayload.from,
+          searchPayload.to,
+          searchPayload.date
+        );
         sendResponse({ id, type, success: true, data: tickets });
         break;
       }
 
       case 'CACHE_TICKETS':
-        await cacheTickets(payload);
+        await cacheTickets(payload as Ticket[]);
         sendResponse({ id, type, success: true });
         break;
 
@@ -399,7 +415,7 @@ async function handleMessage(message: WorkerMessage): Promise<void> {
       }
 
       case 'BATCH_UPDATE': {
-        const batchCount = await batchUpdateBookings(payload);
+        const batchCount = await batchUpdateBookings(payload as BatchUpdate[]);
         sendResponse({ id, type, success: true, data: batchCount });
         break;
       }
